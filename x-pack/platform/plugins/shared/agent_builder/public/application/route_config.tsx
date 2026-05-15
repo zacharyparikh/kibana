@@ -9,7 +9,6 @@ import React from 'react';
 import { matchPath } from 'react-router-dom';
 import { i18n } from '@kbn/i18n';
 
-import { RouteDisplay } from './components/common/route_display';
 import { AgentBuilderConversationsPage } from './pages/conversations';
 import { AgentBuilderAgentsPage } from './pages/agents';
 import { AgentBuilderAgentsCreate } from './pages/agent_create';
@@ -28,6 +27,7 @@ import { AgentBuilderSkillDetailsPage } from './pages/skill_details';
 import { AgentBuilderPluginsPage } from './pages/plugins';
 import { AgentBuilderPluginDetailsPage } from './pages/plugin_details';
 import { AgentBuilderConnectorsPage } from './pages/connectors';
+import { AgentBuilderAgentConnectorsPage } from './pages/agent_connectors';
 
 export type SidebarView = 'conversation' | 'manage';
 
@@ -103,7 +103,7 @@ export const agentRoutes: RouteDefinition[] = [
     navLabel: navLabels.connectors,
     navIcon: 'plugs',
     isConnectors: true,
-    element: <RouteDisplay />,
+    element: <AgentBuilderAgentConnectorsPage />,
   },
   {
     path: '/agents/:agentId/tools',

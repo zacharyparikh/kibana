@@ -24,6 +24,9 @@ export const labels = {
       }
     ),
   },
+  connectors: {
+    title: i18n.translate('xpack.agentBuilder.connectors.title', { defaultMessage: 'Connectors' }),
+  },
   tools: {
     // Landing page
     title: i18n.translate('xpack.agentBuilder.tools.title', { defaultMessage: 'Tools' }),
@@ -1236,6 +1239,145 @@ export const labels = {
     manageAllTools: i18n.translate('xpack.agentBuilder.agentTools.manageAllToolsLink', {
       defaultMessage: 'Manage all tools',
     }),
+  },
+  agentConnectors: {
+    pageDescription: i18n.translate('xpack.agentBuilder.agentConnectors.pageDescription', {
+      defaultMessage:
+        'External services and integrations available to this agent. Add connectors to extend agent capabilities.',
+    }),
+    addConnectorButton: i18n.translate('xpack.agentBuilder.agentConnectors.addConnectorButton', {
+      defaultMessage: 'Add connector',
+    }),
+    searchActiveConnectorsPlaceholder: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.searchActiveConnectorsPlaceholder',
+      {
+        defaultMessage: 'Search active connectors',
+      }
+    ),
+    noActiveConnectorsMessage: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.noActiveConnectorsMessage',
+      {
+        defaultMessage:
+          'No connectors assigned to this agent yet. Add connectors from the library.',
+      }
+    ),
+    noActiveConnectorsMatchMessage: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.noActiveConnectorsMatchMessage',
+      {
+        defaultMessage: 'No active connectors match your search.',
+      }
+    ),
+    removeConnectorButtonLabel: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.removeConnectorButtonLabel',
+      {
+        defaultMessage: 'Remove',
+      }
+    ),
+    removeConnectorAriaLabel: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.removeConnectorAriaLabel',
+      {
+        defaultMessage: 'Remove connector from agent',
+      }
+    ),
+    removeConnectorConfirmTitle: (connectorName: string) =>
+      i18n.translate('xpack.agentBuilder.agentConnectors.removeConnectorConfirmTitle', {
+        defaultMessage: 'Remove "{connectorName}" from agent?',
+        values: { connectorName },
+      }),
+    removeConnectorConfirmBody: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.removeConnectorConfirmBody',
+      {
+        defaultMessage: 'All tools from this connector will be removed from the agent.',
+      }
+    ),
+    removeConnectorConfirmButton: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.removeConnectorConfirmButton',
+      {
+        defaultMessage: 'Remove',
+      }
+    ),
+    removeConnectorCancelButton: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.removeConnectorCancelButton',
+      {
+        defaultMessage: 'Cancel',
+      }
+    ),
+    addConnectorSuccessToast: (connectorName: string) =>
+      i18n.translate('xpack.agentBuilder.agentConnectors.addConnectorSuccessToast', {
+        defaultMessage: 'Connector "{connectorName}" added to agent',
+        values: { connectorName },
+      }),
+    removeConnectorSuccessToast: (connectorName: string) =>
+      i18n.translate('xpack.agentBuilder.agentConnectors.removeConnectorSuccessToast', {
+        defaultMessage: 'Connector "{connectorName}" removed from agent',
+        values: { connectorName },
+      }),
+    updateConnectorsErrorToast: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.updateConnectorsErrorToast',
+      {
+        defaultMessage: 'Unable to update agent connectors',
+      }
+    ),
+    noConnectorSelectedMessage: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.noConnectorSelectedMessage',
+      {
+        defaultMessage: 'Select a connector to view details.',
+      }
+    ),
+    addConnectorFromLibraryTitle: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.addConnectorFromLibraryTitle',
+      {
+        defaultMessage: 'Add connector',
+      }
+    ),
+    manageConnectorLibraryLink: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.manageConnectorLibraryLink',
+      {
+        defaultMessage: 'Manage connectors',
+      }
+    ),
+    searchAvailableConnectorsPlaceholder: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.searchAvailableConnectorsPlaceholder',
+      {
+        defaultMessage: 'Search available connectors',
+      }
+    ),
+    availableConnectorsSummary: (showing: number, total: number) =>
+      i18n.translate('xpack.agentBuilder.agentConnectors.availableConnectorsSummary', {
+        defaultMessage:
+          'Showing {showing} of {total} {total, plural, one {Connector} other {Connectors}}',
+        values: { showing, total },
+      }),
+    noAvailableConnectorsMatchMessage: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.noAvailableConnectorsMatchMessage',
+      {
+        defaultMessage: 'No available connectors match your search.',
+      }
+    ),
+    noAvailableConnectorsMessage: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.noAvailableConnectorsMessage',
+      {
+        defaultMessage: 'All connectors have been added to this agent.',
+      }
+    ),
+    connectorDetailTypeLabel: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.connectorDetailTypeLabel',
+      {
+        defaultMessage: 'Type',
+      }
+    ),
+    connectorDetailDescriptionLabel: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.connectorDetailDescriptionLabel',
+      {
+        defaultMessage: 'Description',
+      }
+    ),
+    manageAllConnectors: i18n.translate(
+      'xpack.agentBuilder.agentConnectors.manageAllConnectorsLink',
+      {
+        defaultMessage: 'Manage all connectors',
+      }
+    ),
   },
   plugins: {
     title: i18n.translate('xpack.agentBuilder.plugins.title', { defaultMessage: 'Plugins' }),
