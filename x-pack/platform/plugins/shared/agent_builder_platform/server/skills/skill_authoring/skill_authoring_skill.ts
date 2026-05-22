@@ -41,7 +41,7 @@ Use this skill when:
 
 Do **not** use this skill when:
 - The user only wants a one-off answer (just answer it).
-- The user wants to edit an already-persisted skill — direct them to the skill editor at /manage/skills.
+- The user wants to edit an already-persisted skill — use the skill-editing skill instead.
 - The user wants to author a tool, plugin, or agent (different entity types, not yet supported in chat).
 
 ## Available Tools
