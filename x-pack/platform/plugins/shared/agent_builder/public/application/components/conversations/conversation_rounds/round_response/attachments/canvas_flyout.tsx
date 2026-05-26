@@ -105,8 +105,6 @@ export const CanvasFlyout: React.FC<CanvasFlyoutProps> = ({ attachmentsService }
         updateOrigin,
         openSidebarConversation: canvasState.isSidebar ? undefined : openSidebarConversation,
         isCanvas: true,
-        version: canvasState.version,
-        versionCount: canvasState.versionCount,
       }) ?? [];
     return [...staticButtons, ...dynamicButtons];
   }, [canvasState, uiDefinition, updateOrigin, openSidebarConversation, dynamicButtons]);
@@ -165,8 +163,6 @@ export const CanvasFlyout: React.FC<CanvasFlyoutProps> = ({ attachmentsService }
               attachment,
               isSidebar,
               openSidebarConversation: isSidebar ? undefined : openSidebarConversation,
-              version: canvasState.attachment.version,
-              versionCount: canvasState.attachment.versionCount,
             },
             {
               registerActionButtons,
