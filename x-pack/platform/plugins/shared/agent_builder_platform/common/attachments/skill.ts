@@ -9,16 +9,6 @@ import { z } from '@kbn/zod/v4';
 import type { Attachment } from '@kbn/agent-builder-common/attachments';
 import { skillCreateRequestSchema } from '@kbn/agent-builder-common';
 
-/**
- * Attachment type id for skills authored via chat.
- *
- * A `skill` attachment is a versioned, by-value snapshot of a candidate
- * skill payload. It is created by the skill-authoring inline tools and
- * rendered as an inline card. The `mode` discriminator determines whether the
- * card shows a "Create" action (POST) or a "Save changes" action (PUT).
- * Once committed, the attachment's `origin` is set to the persisted skill id
- * via `updateOrigin` so the card can show the committed state.
- */
 export const SKILL_ATTACHMENT_TYPE = 'skill' as const;
 
 export const skillAttachmentDataSchema = z.object({

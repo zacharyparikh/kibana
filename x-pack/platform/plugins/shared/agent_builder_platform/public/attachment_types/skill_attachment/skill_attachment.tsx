@@ -33,12 +33,15 @@ import {
   SKILLS_API_PATH,
   type CreateSkillResponse,
 } from '@kbn/agent-builder-plugin/public';
-import type { SkillAttachment } from '../../../common/attachments';
+import {
+  SKILL_ATTACHMENT_TYPE,
+  type SkillAttachment,
+  type SkillAttachmentData,
+} from '../../../common/attachments';
 
 const SKILLS_MANAGE_PATH = '/manage/skills';
 
-const PREVIEW_MAX_LINES = 30;
-const PREVIEW_MAX_HEIGHT_PX = 240;
+const INSTRUCTIONS_PREVIEW_MAX_HEIGHT_PX = 240;
 
 const previewButtonLabel = i18n.translate(
   'xpack.agentBuilderPlatform.attachments.skill.previewButtonLabel',
@@ -68,23 +71,6 @@ const lackManageSkillsPermissionDescription = i18n.translate(
     defaultMessage: 'You do not have permission to manage skills in this space.',
   }
 );
-
-/**
- * Trim a multi-line markdown body to a preview suitable for the inline card.
- * The agent's `content` can be hundreds of lines; we show the first chunk
- * inline and let the user open the full skill in the canvas flyout for the
- * rest.
- */
-const previewContent = (content: string): { preview: string; truncated: boolean } => {
-  const lines = content.split('\n');
-  if (lines.length <= PREVIEW_MAX_LINES) {
-    return { preview: content, truncated: false };
-  }
-  return {
-    preview: lines.slice(0, PREVIEW_MAX_LINES).join('\n'),
-    truncated: true,
-  };
-};
 
 const renderBoldChunks = (chunks: React.ReactNode) => <strong>{chunks}</strong>;
 
@@ -168,11 +154,6 @@ const SkillInstructions = ({
   showFullContent: boolean;
   content: string;
 }) => {
-  let shownContent = content;
-  let truncated = false;
-  if (!showFullContent) {
-    ({ preview: shownContent, truncated } = previewContent(content));
-  }
   return (
     <>
       <EuiText size="xs" color="subdued">
@@ -194,24 +175,12 @@ const SkillInstructions = ({
       <EuiCodeBlock
         language="markdown"
         fontSize="s"
-        overflowHeight={showFullContent ? '100%' : PREVIEW_MAX_HEIGHT_PX}
+        overflowHeight={showFullContent ? '100%' : INSTRUCTIONS_PREVIEW_MAX_HEIGHT_PX}
         isCopyable={showFullContent}
         css={showFullContent ? fullContentInstructionsStyles : previewInstructionsStyles}
       >
-        {shownContent}
+        {content}
       </EuiCodeBlock>
-      {!showFullContent && truncated && (
-        <>
-          <EuiSpacer size="xs" />
-          <EuiText size="xs" color="subdued">
-            <FormattedMessage
-              id="xpack.agentBuilderPlatform.attachments.skill.previewTruncated"
-              defaultMessage="Preview truncated to the first {lineCount} lines. The full instructions will be saved when you click Create skill."
-              values={{ lineCount: PREVIEW_MAX_LINES }}
-            />
-          </EuiText>
-        </>
-      )}
     </>
   );
 };
@@ -310,6 +279,8 @@ export const createSkillAttachmentDefinition = ({
     version: number | undefined;
     versionCount: number | undefined;
   }) => typeof version === 'number' && typeof versionCount === 'number' && version === versionCount;
+  const isCommitted = (attachmentOrigin?: string): attachmentOrigin is string =>
+    Boolean(attachmentOrigin);
 
   return {
     getLabel: (attachment) =>
@@ -317,23 +288,31 @@ export const createSkillAttachmentDefinition = ({
       i18n.translate('xpack.agentBuilderPlatform.attachments.skill.label', {
         defaultMessage: 'Skill draft',
       }),
-    getHeaderIcon: ({ attachment }) => (attachment.data.mode === 'edit' ? 'pencil' : 'sparkles'),
-    getHeaderSubtitle: ({ attachment }) => attachment.data.skill.id,
-    getHeaderBadges: ({ attachment, version, versionCount }) => {
-      const headerBadges: HeaderBadge[] = [];
-      const isCreated = Boolean(attachment.origin);
+    getHeader: ({ attachment }) => {
+      const {
+        version,
+        versionCount,
+        data: { mode, skill },
+      } = attachment;
+      const badges: HeaderBadge[] = [];
 
-      if (isCreated) {
-        const createdBadge: HeaderBadge = {
-          label: i18n.translate('xpack.agentBuilderPlatform.attachments.skill.createdBadge', {
-            defaultMessage: 'Created',
-          }),
+      if (isCommitted(attachment.origin)) {
+        const isCreating = mode === 'create';
+        const label = isCreating
+          ? i18n.translate('xpack.agentBuilderPlatform.attachments.skill.committedBadge.create', {
+              defaultMessage: 'Created',
+            })
+          : i18n.translate('xpack.agentBuilderPlatform.attachments.skill.committedBadge.edit', {
+              defaultMessage: 'Saved',
+            });
+        const committedBadge: HeaderBadge = {
+          label,
           color: 'success',
           iconType: 'check',
         };
-        headerBadges.push(createdBadge);
+        badges.push(committedBadge);
         // Created attachments only show created badge
-        return headerBadges;
+        return { icon: 'sparkles', subtitle: skill.id, badges };
       }
 
       const draftBadge: HeaderBadge = {
@@ -341,7 +320,7 @@ export const createSkillAttachmentDefinition = ({
           defaultMessage: 'Draft',
         }),
       };
-      headerBadges.push(draftBadge);
+      badges.push(draftBadge);
 
       if (isLatest({ version, versionCount })) {
         const latestBadge: HeaderBadge = {
@@ -350,30 +329,22 @@ export const createSkillAttachmentDefinition = ({
           }),
           color: 'primary',
         };
-        headerBadges.push(latestBadge);
+        badges.push(latestBadge);
       }
 
-      return headerBadges;
+      return { icon: 'sparkles', subtitle: skill.id, badges };
     },
     renderInlineContent: (props) => <SkillInlineContent {...props} />,
     renderCanvasContent: (props) => <SkillCanvasContent {...props} />,
-    getActionButtons: ({
-      attachment,
-      updateOrigin,
-      openCanvas,
-      isCanvas,
-      version,
-      versionCount,
-    }) => {
-      const isCommitted = Boolean(attachment.origin);
-      const { mode } = attachment.data;
+    getActionButtons: ({ attachment, updateOrigin, openCanvas, isCanvas }) => {
+      const { version, versionCount, data } = attachment;
+      const { mode, skill } = data;
 
       const actionButtons: ActionButton[] = [];
-
       const createSkill = async () => {
         try {
           const response = await http.post<CreateSkillResponse>(SKILLS_API_PATH, {
-            body: JSON.stringify(attachment.data.skill),
+            body: JSON.stringify(data satisfies SkillAttachmentData),
           });
           await updateOrigin(response.id);
           notifications.toasts.addSuccess({
@@ -395,7 +366,7 @@ export const createSkillAttachmentDefinition = ({
       };
 
       const saveChanges = async () => {
-        const { id: skillId, ...skillContent } = attachment.data.skill;
+        const { id: skillId, ...skillContent } = skill;
         try {
           const response = await http.fetch<CreateSkillResponse>(
             `${SKILLS_API_PATH}/${encodeURIComponent(skillId)}`,
@@ -431,7 +402,7 @@ export const createSkillAttachmentDefinition = ({
       if (isLatest({ version, versionCount })) {
         // Once the draft has been persisted, swap the create button for one that
         // navigates the user to the skill management page for the skill.
-        if (isCommitted && attachment.origin) {
+        if (isCommitted(attachment.origin)) {
           const skillId = attachment.origin;
           const editInManagementButton: ActionButton = {
             label: editInManagementLabel,
@@ -440,7 +411,7 @@ export const createSkillAttachmentDefinition = ({
             href: application.getUrlForApp(AGENTBUILDER_APP_ID, {
               path: `${SKILLS_MANAGE_PATH}/${skillId}`,
             }),
-            target: '_blank',
+            openInNewTab: true,
             handler: () => {
               // Do nothing. navigation handled by href
             },
@@ -475,3 +446,5 @@ export const createSkillAttachmentDefinition = ({
     },
   };
 };
+
+export { SKILL_ATTACHMENT_TYPE };
