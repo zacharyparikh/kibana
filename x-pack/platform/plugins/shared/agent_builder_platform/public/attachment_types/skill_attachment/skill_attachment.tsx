@@ -33,11 +33,7 @@ import {
   SKILLS_API_PATH,
   type CreateSkillResponse,
 } from '@kbn/agent-builder-plugin/public';
-import {
-  SKILL_ATTACHMENT_TYPE,
-  type SkillAttachment,
-  type SkillAttachmentData,
-} from '../../../common/attachments';
+import { SKILL_ATTACHMENT_TYPE, type SkillAttachment } from '../../../common/attachments';
 
 const SKILLS_MANAGE_PATH = '/manage/skills';
 
@@ -272,15 +268,23 @@ export const createSkillAttachmentDefinition = ({
   application,
 }: CreateSkillDeps): AttachmentUIDefinition<SkillAttachment> => {
   const canCreate = application.capabilities.agentBuilder?.manageSkills === true;
-  const isLatest = ({
-    version,
-    versionCount,
-  }: {
-    version: number | undefined;
-    versionCount: number | undefined;
-  }) => typeof version === 'number' && typeof versionCount === 'number' && version === versionCount;
-  const isCommitted = (attachmentOrigin?: string): attachmentOrigin is string =>
-    Boolean(attachmentOrigin);
+  const isLatest = (attachment: SkillAttachment): boolean => {
+    const { version, versionCount } = attachment.versionData ?? {};
+    return (
+      typeof version === 'number' && typeof versionCount === 'number' && version === versionCount
+    );
+  };
+  // An attachment is "committed" when its current version predates the last save.
+  // If the version was created after originSyncedAt, the draft has diverged from
+  // what is persisted at origin and needs to be saved again.
+  const isCommitted = (attachment: SkillAttachment): boolean => {
+    const { versionData } = attachment;
+    if (!attachment.origin || !versionData?.originSyncedAt) {
+      return false;
+    }
+    const hasDraftChanges = versionData.createdAt > versionData.originSyncedAt;
+    return !hasDraftChanges;
+  };
 
   return {
     getLabel: (attachment) =>
@@ -290,13 +294,11 @@ export const createSkillAttachmentDefinition = ({
       }),
     getHeader: ({ attachment }) => {
       const {
-        version,
-        versionCount,
         data: { mode, skill },
       } = attachment;
       const badges: HeaderBadge[] = [];
 
-      if (isCommitted(attachment.origin)) {
+      if (isCommitted(attachment)) {
         const isCreating = mode === 'create';
         const label = isCreating
           ? i18n.translate('xpack.agentBuilderPlatform.attachments.skill.committedBadge.create', {
@@ -322,7 +324,7 @@ export const createSkillAttachmentDefinition = ({
       };
       badges.push(draftBadge);
 
-      if (isLatest({ version, versionCount })) {
+      if (isLatest(attachment)) {
         const latestBadge: HeaderBadge = {
           label: i18n.translate('xpack.agentBuilderPlatform.attachments.skill.latestBadge', {
             defaultMessage: 'Latest',
@@ -337,14 +339,14 @@ export const createSkillAttachmentDefinition = ({
     renderInlineContent: (props) => <SkillInlineContent {...props} />,
     renderCanvasContent: (props) => <SkillCanvasContent {...props} />,
     getActionButtons: ({ attachment, updateOrigin, openCanvas, isCanvas }) => {
-      const { version, versionCount, data } = attachment;
+      const { data } = attachment;
       const { mode, skill } = data;
 
       const actionButtons: ActionButton[] = [];
       const createSkill = async () => {
         try {
           const response = await http.post<CreateSkillResponse>(SKILLS_API_PATH, {
-            body: JSON.stringify(data satisfies SkillAttachmentData),
+            body: JSON.stringify(skill),
           });
           await updateOrigin(response.id);
           notifications.toasts.addSuccess({
@@ -399,10 +401,10 @@ export const createSkillAttachmentDefinition = ({
         actionButtons.push(previewButton);
       }
 
-      if (isLatest({ version, versionCount })) {
+      if (isLatest(attachment)) {
         // Once the draft has been persisted, swap the create button for one that
         // navigates the user to the skill management page for the skill.
-        if (isCommitted(attachment.origin)) {
+        if (isCommitted(attachment)) {
           const skillId = attachment.origin;
           const editInManagementButton: ActionButton = {
             label: editInManagementLabel,
